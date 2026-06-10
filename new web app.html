@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lee`s Joint – Unique Taste | Food Delivery Koforidua</title>
+  <meta name="description" content="Order fresh, authentic Ghanaian food from Chez Lee. Banku, Jollof, Fries, and more. Delivery & pickup in Koforidua, Eastern Region."/>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Paystack Inline JS Library -->
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-logo">Lee`s Joint<span>Unique Taste</span></div>
+  <div class="nav-links">
+    <a href="#" class="active" onclick="showPage('home',this)">Home</a>
+    <a href="#" onclick="showPage('menu',this)">Menu</a>
+    <a href="#" onclick="showPage('about',this)">About</a>
+    <a href="#" onclick="showPage('contact',this)">Contact</a>
+  </div>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="hamburger" onclick="toggleMobileNav()">☰</button>
+  </div>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="#" onclick="showPage('home');toggleMobileNav()">🏠 Home</a>
+  <a href="#" onclick="showPage('menu');toggleMobileNav()">🍽 Menu</a>
+  <a href="#" onclick="showPage('about');toggleMobileNav()">📖 About</a>
+  <a href="#" onclick="showPage('contact');toggleMobileNav()">📞 Contact</a>
+</div>
+
+<!-- ── CART OVERLAY ── -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h3>Your Order</h3>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <div class="icon">🛒</div>
+      <div>Your cart is empty<br><small style="font-size:.75rem">Add items from the menu</small></div>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-summary">
+      <div class="summary-row"><span>Subtotal</span><span id="cartSubtotal">GH₵ 0.00</span></div>
+      <div class="summary-row"><span>Delivery</span><span id="cartDelivery">GH₵ 0.00</span></div>
+      <hr class="divider"/>
+      <div class="summary-row total"><span>Total</span><span id="cartTotal">GH₵ 0.00</span></div>
+    </div>
+    <button class="btn-primary" style="width:100%;padding:14px;border-radius:50px;font-size:.9rem" onclick="openOrderModal()">Place Order →</button>
+  </div>
+</div>
+
+<!-- ── ORDER MODAL ── -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <h3>Complete Your Order</h3>
+    
+    <div class="form-group">
+      <label>Full Name *</label>
+      <input type="text" id="custName" placeholder="e.g. Kofi Mensah" required/>
+    </div>
+    
+    <div class="form-group">
+      <label>Phone Number *</label>
+      <input type="tel" id="custPhone" placeholder="+233 XX XXX XXXX" required/>
+    </div>
+    
+    <div class="form-group">
+      <label>Email (required for payment) *</label>
+      <input type="email" id="custEmail" placeholder="you@email.com" required/>
+    </div>
+    
+    <div class="form-group">
+      <label>Order Type *</label>
+      <div class="radio-group">
+        <label class="radio-opt">
+          <input type="radio" name="orderType" value="delivery" checked onchange="updateDelivery(this)"/>
+          <span>🚗 Delivery</span>
+        </label>
+        <label class="radio-opt">
+          <input type="radio" name="orderType" value="pickup" onchange="updateDelivery(this)"/>
+          <span>🏃 Pickup</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="form-group" id="addressGroup">
+      <label>Delivery Region & Town</label>
+      <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <input type="text" value="Eastern Region" readonly style="flex: 1; opacity: 0.8; background: var(--border); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed;" />
+        <input type="text" value="Koforidua" readonly style="flex: 1; opacity: 0.8; background: var(--border); border: 1px solid var(--border); color: var(--muted); cursor: not-allowed;" />
+      </div>
+      <label>Particular Location / Landmark (e.g. KTU Campus, hostel name) *</label>
+      <input type="text" id="custAddress" placeholder="e.g. KTU Campus, Block B, Hostel name"/>
+    </div>
+    
+    <div class="form-group">
+      <label>Payment Network (ISP) *</label>
+      <select id="paymentNetwork" required style="width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; color: var(--text); font-size: .9rem;">
+        <option value="MTN">MTN Mobile Money</option>
+        <option value="Telecel">Telecel Cash</option>
+        <option value="AirtelTigo">AirtelTigo Money</option>
+        <option value="Card">Visa / Mastercard (Card)</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Order Notes</label>
+      <textarea id="custNotes" placeholder="Special instructions, allergies, etc."></textarea>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeOrderModal()">Cancel</button>
+      <button class="btn-order" onclick="placeOrder()">✅ Confirm Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RECEIPT MODAL ── -->
+<div class="modal-overlay" id="receiptModal">
+  <div class="receipt-modal">
+    <div class="receipt-content" id="receiptContent">
+      <!-- Filled by JS -->
+    </div>
+    <div class="receipt-actions">
+      <button class="cta-btn wa btn-whatsapp" onclick="sendWhatsApp()">💬 WhatsApp</button>
+      <button class="cta-btn btn-sms" onclick="sendSMS()">📱 SMS Order</button>
+      <button class="cta-btn btn-download" onclick="downloadReceipt()">⬇ Save</button>
+      <button class="cta-btn btn-close-r" onclick="closeReceiptModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════
+     PAGE: HOME
+══════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="fade-up">
+        <div class="hero-eyebrow">Now Open in Koforidua, Ghana</div>
+        <h1>Food That <em>Feels</em> Like Home</h1>
+        <p class="hero-sub">Authentic Ghanaian flavours — Banku, Jollof, Fried Rice, Noodles, Fries, fresh juices and more — delivered to your door or ready for pickup in Koforidua.</p>
+        <div class="hero-cta">
+          <button class="btn-primary" onclick="showPage('menu')">Order Now →</button>
+          <button class="btn-outline" onclick="showPage('menu')">View Menu</button>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num">4.8★</span><span class="stat-label">Rating</span></div>
+          <div class="stat"><span class="stat-num">500+</span><span class="stat-label">Orders</span></div>
+          <div class="stat"><span class="stat-num">15–30</span><span class="stat-label">Min Delivery</span></div>
+        </div>
+      </div>
+      <div class="hero-visual fade-up-2">
+        <div class="hero-plate">
+          <img id="heroRotatingImg" class="hero-rotating-img" src="images/banku-and-Tilapia.jpg" alt="Delicious food from Chez Lee" />
+          <div class="hero-badge b1"><span class="dot"></span><span>Delivery <span class="gold">Open</span></span></div>
+          <div class="hero-badge b2"><span>🔥 Fresh Daily</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURED -->
+  <div class="section">
+    <div class="section-header">
+      <div class="eyebrow">Popular Right Now</div>
+      <h2>Customer Favourites</h2>
+      <p>The dishes our customers order again and again</p>
+    </div>
+    <div class="menu-grid" id="featuredGrid"></div>
+    <div style="text-align:center;margin-top:32px">
+      <button class="btn-primary" onclick="showPage('menu')">See Full Menu →</button>
+    </div>
+  </div>
+
+  <!-- REVIEWS -->
+  <div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="section">
+      <div class="section-header">
+        <div class="eyebrow">What People Say</div>
+        <h2>Customer Reviews</h2>
+      </div>
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p class="review-text">The Banku and Tilapia is absolutely divine. Tastes exactly like my grandmother used to make. Will order every week!</p>
+          <div class="reviewer"><div class="reviewer-avatar">A</div><div><div class="reviewer-name">Ama Owusu</div><div class="reviewer-date">2 weeks ago</div></div></div>
+        </div>
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p class="review-text">Fast delivery and the Jollof rice was still hot when it arrived. The portion sizes are very generous for the price!</p>
+          <div class="reviewer"><div class="reviewer-avatar">K</div><div><div class="reviewer-name">Kwame Asante</div><div class="reviewer-date">1 week ago</div></div></div>
+        </div>
+        <div class="review-card">
+          <div class="stars">★★★★☆</div>
+          <p class="review-text">Love the freshly made pineapple juice. The fries are crispy and the chicken wings are perfectly spiced. Highly recommend!</p>
+          <div class="reviewer"><div class="reviewer-avatar">E</div><div><div class="reviewer-name">Efua Boateng</div><div class="reviewer-date">3 days ago</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA BANNER -->
+  <div class="section" style="text-align:center;padding-bottom:20px">
+    <div style="background:linear-gradient(135deg,rgba(212,168,67,.1) 0%,rgba(212,168,67,.05) 100%);border:1px solid rgba(212,168,67,.2);border-radius:var(--radius);padding:48px 24px">
+      <div class="eyebrow">Ready to Eat?</div>
+      <h2 style="font-family:var(--font-display);font-size:clamp(1.6rem,3vw,2.4rem);margin-bottom:12px">Order in Minutes</h2>
+      <p style="color:var(--muted);margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7">Pick your favourites, confirm your delivery, and we'll handle the rest. Your food is on its way.</p>
+      <button class="btn-primary" style="font-size:1rem;padding:16px 36px" onclick="showPage('menu')">Start Your Order 🍽</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE: MENU
+══════════════════════════════════════ -->
+<div class="page" id="page-menu">
+  <div class="section">
+    <div class="section-header">
+      <div class="eyebrow">What We Serve</div>
+      <h2>Our Menu</h2>
+      <p>Fresh ingredients, authentic recipes, unique taste</p>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:20px">
+      <div class="search-wrap" style="margin-bottom:0;flex:1;min-width:200px">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="menuSearch" placeholder="Search dishes..." oninput="filterMenu()"/>
+      </div>
+    </div>
+    <div class="cat-scroll" id="catPills"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+    <div id="menuEmpty" style="display:none;text-align:center;padding:60px 0;color:var(--muted)">
+      <div style="font-size:3rem;margin-bottom:12px">🔍</div>
+      <div>No dishes found. Try a different search.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE: ABOUT
+══════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="section">
+    <div class="about-hero">
+      <h1>Our Story</h1>
+      <p>Chez Lee was born from a love of authentic Ghanaian flavours and a desire to share them with the community. Every dish is crafted with fresh ingredients and genuine passion.</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="icon">🌿</div>
+        <h3>Fresh Ingredients</h3>
+        <p>We source our produce locally every morning — market-fresh fish, farm vegetables, and real palm fruit for our soups and stews.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">👨‍🍳</div>
+        <h3>Home-Style Cooking</h3>
+        <p>Our recipes are passed down through generations. We cook the way a Ghanaian grandmother cooks — with time, care, and no shortcuts.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">🚀</div>
+        <h3>Fast Delivery</h3>
+        <p>We know hunger doesn't wait. Our delivery team covers Koforidua quickly so your food arrives hot, fresh, and on time — every time.</p>
+      </div>
+      <div class="about-card">
+        <div class="icon">♻️</div>
+        <h3>Eco Packaging</h3>
+        <p>We use biodegradable packaging wherever possible because good food should also mean a cleaner planet.</p>
+      </div>
+    </div>
+    <div class="hours-grid">
+      <h3>⏰ Opening Hours</h3>
+      <div class="hours-row"><span class="day">Monday – Friday</span><span class="time open">6:00 AM – 10:00 PM</span></div>
+      <div class="hours-row"><span class="day">Saturday</span><span class="time open">7:00 AM – 11:00 PM</span></div>
+      <div class="hours-row"><span class="day">Sunday</span><span class="time open">8:00 AM – 9:00 PM</span></div>
+    </div>
+    <div class="about-grid">
+      <div class="about-card" style="grid-column:1/-1">
+        <div class="icon">📍</div>
+        <h3>Find Us</h3>
+        <p style="margin-bottom:12px">We're conveniently located in Koforidua, Ghana. Walk in for dine-in, call ahead for takeaway, or order online for delivery.</p>
+        <div class="map-placeholder" onclick="openMap()">
+          <div class="map-icon">🗺</div>
+          <div><strong>Koforidua, Ghana</strong></div>
+          <div style="font-size:.75rem">Tap to open in Google Maps</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     PAGE: CONTACT
+══════════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <div class="section">
+    <div class="section-header">
+      <div class="eyebrow">Get In Touch</div>
+      <h2>Contact Us</h2>
+      <p>Questions, feedback, or large orders? We'd love to hear from you.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>Our Details</h3>
+        <div class="contact-item">
+          <div class="ci-icon">📍</div>
+          <div class="ci-text"><span class="ci-label">Location</span><span class="ci-val">Koforidua, Ghana</span></div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">📞</div>
+          <div class="ci-text"><span class="ci-label">Phone</span><span class="ci-val">+233 24 410 7536</span></div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">⏰</div>
+          <div class="ci-text"><span class="ci-label">Hours</span><span class="ci-val">Mon–Fri: 6am–10pm</span></div>
+        </div>
+        <div class="contact-item">
+          <div class="ci-icon">🚗</div>
+          <div class="ci-text"><span class="ci-label">Services</span><span class="ci-val">Delivery · Takeaway · Dine-In</span></div>
+        </div>
+        <div class="cta-btns">
+          <a href="https://wa.me/233244107536" target="_blank" class="cta-btn wa">💬 Chat on WhatsApp</a>
+          <a href="tel:+233244107536" class="cta-btn phone">📞 Call Us Now</a>
+        </div>
+      </div>
+      <div class="contact-card">
+        <h3>Send a Message</h3>
+        <div class="contact-form">
+          <input type="text" id="cfName" placeholder="Your Name"/>
+          <input type="tel" id="cfPhone" placeholder="Your Phone Number"/>
+          <input type="text" id="cfSubject" placeholder="Subject"/>
+          <textarea id="cfMessage" placeholder="Your message..."></textarea>
+          <button class="btn-primary" style="width:100%;padding:13px;border-radius:50px;font-size:.9rem" onclick="sendContactForm()">Send Message →</button>
+        </div>
+      </div>
+    </div>
+    <div class="map-placeholder" onclick="openMap()" style="height:280px">
+      <div class="map-icon">🗺</div>
+      <div><strong>Chez Lee Restaurant, Koforidua Ghana</strong></div>
+      <div style="font-size:.75rem;margin-top:4px">Click to open in Google Maps</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">Chez Lee</div>
+      <p class="footer-desc">Authentic Ghanaian food with a unique twist. Fresh ingredients, generous portions, fast delivery in Koforidua.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Menu</h4>
+      <a href="#" onclick="showPage('menu');filterByCategory('Fries')">Fries</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Banku')">Banku</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Jollof Rice')">Jollof Rice</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Fried Rice')">Fried Rice</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Plain Rice')">Plain Rice</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Noodles')">Noodles</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Salad')">Salad</a>
+      <a href="#" onclick="showPage('menu');filterByCategory('Drinks')">Drinks</a>
+    </div>
+    <div class="footer-col">
+      <h4>Info</h4>
+      <a href="#" onclick="showPage('about')">About Us</a>
+      <a href="#" onclick="showPage('contact')">Contact</a>
+      <a href="tel:+233598716291">📞 +233 598 716 291</a>
+      <a href="https://wa.me/233598716291" target="_blank">💬 WhatsApp</a>
+    </div>
+  </div>
+  <div class="footer-bottom"> 
+    <span>© 2025 Lee`s Joint · Unique Taste · Koforidua, Ghana</span>
+    <span>Made with ❤️ for great food</span>
+  </div>
+</footer>
+
+<!-- ── BOTTOM NAV (mobile) ── -->
+<div class="bottom-nav">
+  <div class="bottom-nav-items">
+    <button class="bn-item active" onclick="showPage('home',null,this)"><span class="bn-icon">🏠</span>Home</button>
+    <button class="bn-item" onclick="showPage('menu',null,this)"><span class="bn-icon">🍽</span>Menu</button>
+    <button class="bn-item" onclick="toggleCart()"><span class="bn-icon">🛒</span>Cart<span class="bn-badge" id="bnBadge">0</span></button>
+    <button class="bn-item" onclick="showPage('about',null,this)"><span class="bn-icon">📖</span>About</button>
+    <button class="bn-item" onclick="showPage('contact',null,this)"><span class="bn-icon">📞</span>Contact</button>
+  </div>
+</div>
+
+<!-- Custom JavaScript -->
+<script src="app.js"></script>
+</body>
+</html>
