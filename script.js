@@ -228,11 +228,8 @@ function updateCartUI(){
   bn.textContent = count;
   bn.classList.toggle('show',count>0);
   const subtotal = cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery = cart.length&&document.querySelector('input[name="orderType"]:checked')?.value==='delivery'?15:0;
-  const total = subtotal+delivery;
-  document.getElementById('cartSubtotal').textContent=`GH₵ ${subtotal.toFixed(2)}`;
-  document.getElementById('cartDelivery').textContent=delivery?`GH₵ ${delivery.toFixed(2)}`:'Free';
-  document.getElementById('cartTotal').textContent=`GH₵ ${total.toFixed(2)}`;
+  const total = subtotal;
+  document.getElementById('cartTotal').textContent=`GH₵ ${subtotal.toFixed(2)}`;
   if(!cart.length){
     document.getElementById('cartItems').innerHTML=`<div class="cart-empty"><div class="icon">🛒</div><div>Your cart is empty<br><small style="font-size:.75rem">Add items from the menu</small></div></div>`;
   } else {
@@ -279,8 +276,7 @@ function placeOrder(){
 
   const email = rawEmail || `${phone.replace(/[^0-9]/g, '') || Date.now()}@chezlee.com`;
   const subtotal = cart.reduce((s,c)=>s+c.price*c.qty,0);
-  const delivery = orderType==='delivery'?15:0;
-  const total = subtotal+delivery;
+  const total = subtotal;
 
   const btn = document.querySelector('.btn-order');
   if(btn) {
@@ -331,7 +327,7 @@ function placeOrder(){
         orderType,
         notes: document.getElementById('custNotes').value||'None',
         items: [...cart],
-        subtotal, delivery, total,
+        total,
         paystackRef: response.reference,
         paymentMeans: paymentMeans,
         isp: isp
@@ -390,8 +386,7 @@ function buildReceipt(){
     <hr class="receipt-divider"/>
     <div class="receipt-totals">
       <table>
-        <tr><td>Subtotal</td><td>GH₵${r.subtotal.toFixed(2)}</td></tr>
-        <tr><td>Delivery</td><td>${r.delivery?'GH₵'+r.delivery.toFixed(2):'Free'}</td></tr>
+        <tr><td>Subtotal</td><td>GH₵${r.total.toFixed(2)}</td></tr>
         <tr class="grand"><td><strong>TOTAL PAID</strong></td><td><strong>GH₵${r.total.toFixed(2)}</strong></td></tr>
       </table>
     </div>
@@ -444,8 +439,7 @@ function sendWhatsApp(){
 *Order Details:*
 ${itemList}
 
-*Subtotal:* GH₵${r.subtotal.toFixed(2)}
-*Delivery:* ${r.delivery?'GH₵'+r.delivery.toFixed(2):'Free'}
+*Subtotal:* GH₵${r.total.toFixed(2)}
 *TOTAL PAID: GH₵${r.total.toFixed(2)}*
 
 *Payment Method (Means):* ${r.paymentMeans}
