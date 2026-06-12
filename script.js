@@ -280,10 +280,18 @@ function placeOrder(){
   const subtotal = cart.reduce((s,c)=>s+c.price*c.qty,0);
   const total = subtotal;
 
-  const btn = document.querySelector('.btn-order');
+  const btn = document.querySelector('#orderModal .btn-order');
   if(btn) {
     btn.disabled = true;
     btn.textContent = 'Processing Payment...';
+  }
+
+  console.log('placeOrder: total=', total, 'email=', email, 'name=', name);
+  
+  if (typeof PaystackPop === 'undefined') {
+    showToast('Payment system not loaded. Please refresh page.');
+    if(btn) { btn.disabled = false; btn.textContent = '✅ Confirm Order'; }
+    return;
   }
 
   let paymentMeans = 'Mobile Money';
@@ -293,11 +301,10 @@ function placeOrder(){
     isp = 'Card';
   }
 
-  // Paystack Live Integration
   let handler = PaystackPop.setup({
     key: 'pk_live_4f5e7d35d201c81efd615f2f98ba08c7b049f4ae',
     email: email,
-    amount: Math.round(total * 100), // amount in pesewas
+    amount: Math.round(total * 100),
     currency: 'GHS',
     ref: 'CL-' + Date.now().toString().slice(-6),
     metadata: {
@@ -319,48 +326,41 @@ function placeOrder(){
         }
       ]
     },
-callback: async function(response){
-       receiptData={
-         receiptNo: response.reference,
-         date: new Date().toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}),
-         name, phone,
-         email: email,
-         address: orderType==='pickup'?'Pickup':'Eastern Region, Koforidua - '+address,
-         orderType,
-         notes: document.getElementById('custNotes').value||'None',
-         items: [...cart],
-         total,
-         paystackRef: response.reference,
-         paymentMeans: paymentMeans,
-         isp: isp
-       };
-       
-       // Save order to Firestore
-       try {
-         if (window.firebaseDb && window.firebaseAuth?.currentUser) {
-           await addDoc(collection(window.firebaseDb, 'orders'), {
-             ...receiptData,
-             userId: window.firebaseAuth.currentUser.uid,
-             userEmail: window.firebaseAuth.currentUser.email,
-             createdAt: serverTimestamp()
-           });
-         }
-       } catch (e) {
-         console.error('Failed to save order: ', e);
-       }
-       
-       closeOrderModal();
-       buildReceipt();
-       document.getElementById('receiptModal').classList.add('open');
-       
-       // Auto-send to owner WhatsApp
-       sendWhatsAppToOwner();
-       
-       if(btn) {
-         btn.disabled = false;
-         btn.textContent = '✅ Confirm Order';
-       }
-     },
+    callback: function(response){
+      receiptData={
+        receiptNo: response.reference,
+        date: new Date().toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}),
+        name, phone,
+        email: email,
+        address: orderType==='pickup'?'Pickup':'Eastern Region, Koforidua - '+address,
+        orderType,
+        notes: document.getElementById('custNotes').value||'None',
+        items: [...cart],
+        total,
+        paystackRef: response.reference,
+        paymentMeans: paymentMeans,
+        isp: isp
+      };
+      
+      if (window.firebaseDb && window.firebaseAuth?.currentUser) {
+        addDoc(collection(window.firebaseDb, 'orders'), {
+          ...receiptData,
+          userId: window.firebaseAuth.currentUser.uid,
+          userEmail: window.firebaseAuth.currentUser.email,
+          createdAt: serverTimestamp()
+        }).catch(e => console.error('Failed to save order: ', e));
+      }
+      
+      closeOrderModal();
+      buildReceipt();
+      document.getElementById('receiptModal').classList.add('open');
+      sendWhatsAppToOwner();
+      
+      if(btn) {
+        btn.disabled = false;
+        btn.textContent = '✅ Confirm Order';
+      }
+    },
     onClose: function(){
       showToast('Payment cancelled');
       if(btn) {
@@ -369,7 +369,14 @@ callback: async function(response){
       }
     }
   });
-  handler.openIframe();
+  
+  try {
+    handler.openIframe();
+  } catch (e) {
+    console.error('Paystack openIframe error:', e);
+    showToast('Payment error: ' + e.message);
+    if(btn) { btn.disabled = false; btn.textContent = '✅ Confirm Order'; }
+  }
 }
 
 function buildReceipt(){
@@ -562,6 +569,18 @@ function observeCards(container){
 renderFeatured();
 updateCartUI();
 
+// Check Paystack availability
+if (typeof PaystackPop === 'undefined') {
+  console.warn('Paystack inline.js not loaded. Payment may not work.');
+} else {
+  console.log('Paystack inline.js loaded successfully.');
+}
+
+// Global error handler
+window.addEventListener('error', function(e) {
+  console.error('Global error:', e.error, e.filename, e.lineno);
+});
+
 // ── AUTH ──
 function openAuthModal(mode){
   authMode = mode || 'login';
@@ -579,21 +598,26 @@ function toggleAuthMode(){
   document.querySelector('#authModal a').textContent = authMode === 'login' ? 'Switch to Register' : 'Switch to Login';
 }
 async function submitAuth(){
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value.trim();
-  if(!email||!password){showToast('Please enter email and password');return;}
-  try {
-    if(authMode==='register'){
-      if(window.registerWithEmail) await window.registerWithEmail(email,password);
-    }else{
-      if(window.loginWithEmail) await window.loginWithEmail(email,password);
-    }
-    closeAuthModal();
-    showPage('home'); // Redirect to home after successful login
-  } catch(e) {
-    // Error already shown in registerWithEmail/loginWithEmail
-  }
-}
+   const email = document.getElementById('authEmail').value.trim();
+   const password = document.getElementById('authPassword').value.trim();
+   if(!email||!password){showToast('Please enter email and password');return;}
+   try {
+     if(authMode==='register'){
+       if(window.registerWithEmail) await window.registerWithEmail(email,password);
+     }else{
+       if(window.loginWithEmail) await window.loginWithEmail(email,password);
+     }
+     closeAuthModal();
+     showPage('home'); // Redirect to home after successful login
+   } catch(e) {
+     // Error already shown in registerWithEmail/loginWithEmail
+   }
+ }
+
+ // Handle Google sign-in redirect
+ window.addEventListener('authSuccess', function(){
+   showPage('home');
+ });
 
 // ── HERO IMAGE ROTATOR ──
 // Collect unique images from the menu for the hero plate slideshow

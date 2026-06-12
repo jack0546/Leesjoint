@@ -32,24 +32,29 @@
       measurementId: "G-L9ZM18F6S1"
     };
 
-    window.firebaseApp = initializeApp(firebaseConfig);
-    window.firebaseAuth = getAuth(window.firebaseApp);
-    window.firebaseDb = getFirestore(window.firebaseApp);
-    window.firebaseAnalytics = getAnalytics(window.firebaseApp);
-    window.onAuthStateChanged = onAuthStateChanged;
-    window.getDocs = getDocs;
-    window.query = query;
-    window.orderBy = orderBy;
+window.firebaseApp = initializeApp(firebaseConfig);
+     window.firebaseAuth = getAuth(window.firebaseApp);
+     window.firebaseDb = getFirestore(window.firebaseApp);
+     window.firebaseAnalytics = getAnalytics(window.firebaseApp);
+     window.onAuthStateChanged = onAuthStateChanged;
+     window.collection = collection;
+     window.addDoc = addDoc;
+     window.serverTimestamp = serverTimestamp;
+     window.getDocs = getDocs;
+     window.query = query;
+     window.orderBy = orderBy;
     
-    window.googleSignIn = async function() {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(window.firebaseAuth, provider);
-        showToast('Signed in successfully!');
-      } catch (error) {
-        showToast('Sign in failed: ' + error.message);
-      }
-    };
+window.googleSignIn = async function() {
+       const provider = new GoogleAuthProvider();
+       try {
+         await signInWithPopup(window.firebaseAuth, provider);
+         showToast('Signed in successfully!');
+         closeAuthModal();
+         window.dispatchEvent(new CustomEvent('authSuccess'));
+       } catch (error) {
+         showToast('Sign in failed: ' + error.message);
+       }
+     };
     
     window.registerWithEmail = async function(email, password) {
       try {
