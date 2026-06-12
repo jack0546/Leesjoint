@@ -99,6 +99,7 @@ function showPage(id, linkEl, bnEl) {
   if(bnEl) bnEl.classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
   if(id==='menu') renderMenu();
+  if(id==='orders') loadUserOrders();
 }
 
 // ── MOBILE NAV ──
@@ -601,15 +602,69 @@ document.addEventListener('DOMContentLoaded', function() {
     window.onAuthStateChanged(window.firebaseAuth, (user) => {
       const userPanel = document.getElementById('userPanel');
       const userEmail = document.getElementById('userEmail');
+      const userPhoto = document.getElementById('userPhoto');
       if (user) {
         userPanel.style.display = 'block';
         userEmail.textContent = user.email || 'Logged in';
+        if (user.photoURL) {
+          userPhoto.src = user.photoURL;
+          userPhoto.style.display = 'block';
+        } else {
+          userPhoto.style.display = 'none';
+        }
       } else {
         userPanel.style.display = 'none';
       }
     });
   }
 });
+
+// Load user orders from Firestore
+async function loadUserOrders(){
+  if (!window.firebaseDb || !window.firebaseAuth?.currentUser) {
+    document.getElementById('ordersPlaceholder').textContent = 'Please log in to view your order history.';
+    return;
+  }
+  
+  const ordersList = document.getElementById('ordersList');
+  const ordersRef = collection(window.firebaseDb, 'orders');
+  
+  try {
+    const querySnapshot = await getDocs(ordersRef);
+    const userOrders = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.userId === window.firebaseAuth.currentUser.uid || data.userEmail === window.firebaseAuth.currentUser.email) {
+        userOrders.push({id: doc.id, ...data});
+      }
+    });
+    
+    if (userOrders.length === 0) {
+      ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:3rem">📋</div><div>No orders yet. Place your first order!</div></div>';
+    } else {
+      ordersList.innerHTML = userOrders.map(orderCard).join('');
+    }
+  } catch (error) {
+    ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Error loading orders.</div>';
+  }
+}
+
+function orderCard(order){
+  const date = order.date || 'N/A';
+  const items = order.items?.map(i => `${i.emoji} ${i.name} x${i.qty}`).join(', ') || 'N/A';
+  return `
+    <div class="order-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Order #${order.receiptNo || order.id?.slice(0,8)}</strong>
+        <span style="color:var(--gold)">GH₵ ${order.total?.toFixed(2)}</span>
+      </div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">${date}</div>
+      <div style="font-size:.9rem">${items}</div>
+      <div style="margin-top:8px">
+        <span style="background:#2ECC71;color:white;padding:2px 8px;border-radius:4px;font-size:.75rem">PAID</span>
+      </div>
+    </div>`;
+}
 
 function rotateHeroImage() {
   const imgEl = document.getElementById('heroRotatingImg');
