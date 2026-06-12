@@ -15,6 +15,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Paystack Inline JS Library -->
   <script src="https://js.paystack.co/v1/inline.js"></script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyABQc95UzGwQby0suW1H6BL33vDlRdU4LU",
+      authDomain: "project-cd15d1cd-f058-4788-881.firebaseapp.com",
+      projectId: "project-cd15d1cd-f058-4788-881",
+      storageBucket: "project-cd15d1cd-f058-4788-881.firebasestorage.app",
+      messagingSenderId: "709527415526",
+      appId: "1:709527415526:web:d36f3f0360c98a01c6e927",
+      measurementId: "G-L9ZM18F6S1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
   
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="style.css"/>
