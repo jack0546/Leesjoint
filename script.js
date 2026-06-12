@@ -334,28 +334,32 @@ callback: async function(response){
          isp: isp
        };
        
-// Save order to Firestore
-        try {
-          if (window.firebaseDb && window.firebaseAuth?.currentUser) {
-            await addDoc(collection(window.firebaseDb, 'orders'), {
-              ...receiptData,
-              userId: window.firebaseAuth.currentUser.uid,
-              userEmail: window.firebaseAuth.currentUser.email,
-              createdAt: serverTimestamp()
-            });
-          }
-        } catch (e) {
-          console.error('Failed to save order: ', e);
-        }
+       // Save order to Firestore
+       try {
+         if (window.firebaseDb && window.firebaseAuth?.currentUser) {
+           await addDoc(collection(window.firebaseDb, 'orders'), {
+             ...receiptData,
+             userId: window.firebaseAuth.currentUser.uid,
+             userEmail: window.firebaseAuth.currentUser.email,
+             createdAt: serverTimestamp()
+           });
+         }
+       } catch (e) {
+         console.error('Failed to save order: ', e);
+       }
        
        closeOrderModal();
        buildReceipt();
        document.getElementById('receiptModal').classList.add('open');
+       
+       // Auto-send to owner WhatsApp
+       sendWhatsAppToOwner();
+       
        if(btn) {
          btn.disabled = false;
          btn.textContent = '✅ Confirm Order';
        }
-},
+     },
     onClose: function(){
       showToast('Payment cancelled');
       if(btn) {
@@ -471,10 +475,10 @@ Please confirm this order 🙏`;
 }
 
 function sendSMS(){
-  if(!receiptData) return;
-  const r = receiptData;
-  const itemList = r.items.map(i=>`${i.name} x${i.qty}`).join(', ');
-  const msg = `Chez Lee Order:
+   if(!receiptData) return;
+   const r = receiptData;
+   const itemList = r.items.map(i=>`${i.name} x${i.qty}`).join(', ');
+   const msg = `Chez Lee Order:
 Phone: ${r.phone}
 Loc: ${r.address}
 Items: ${itemList}
@@ -486,6 +490,32 @@ Status: PAID`;
   const separator = isIOS ? '&' : '?';
   const smsUrl = `sms:+233244107536${separator}body=${encodeURIComponent(msg)}`;
   window.location.href = smsUrl;
+}
+
+// Auto-send order to owner WhatsApp
+function sendWhatsAppToOwner(){
+   if(!receiptData) return;
+   const r = receiptData;
+   const itemList = r.items.map(i=>`• ${i.emoji} ${i.name} x${i.qty} = GH₵${(i.price*i.qty).toFixed(2)}`).join('\n');
+   const msg = `🍽 *NEW ORDER – Chez Lee*\n
+*Customer:* ${r.name}
+*Phone:* ${r.phone}
+*Email:* ${r.email || 'N/A'}
+*Type:* ${r.orderType === 'delivery' ? '🚗 Delivery' : '🏃 Pickup'}
+*Location:* ${r.address}
+*Time:* ${r.date}
+
+*Items:*
+${itemList}
+
+*Total: GH₵${r.total.toFixed(2)}*
+
+*Payment:* ${r.paymentMeans} via ${r.isp}
+*Ref:* ${r.paystackRef}
+*Status:* ✅ PAID`;
+   
+   const waUrl = `https://wa.me/233244107536?text=${encodeURIComponent(msg)}`;
+   window.open(waUrl, '_blank');
 }
 
 // ── CONTACT FORM ──
