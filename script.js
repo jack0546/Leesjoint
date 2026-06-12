@@ -582,12 +582,17 @@ async function submitAuth(){
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value.trim();
   if(!email||!password){showToast('Please enter email and password');return;}
-  if(authMode==='register'){
-    if(window.registerWithEmail) await window.registerWithEmail(email,password);
-  }else{
-    if(window.loginWithEmail) await window.loginWithEmail(email,password);
+  try {
+    if(authMode==='register'){
+      if(window.registerWithEmail) await window.registerWithEmail(email,password);
+    }else{
+      if(window.loginWithEmail) await window.loginWithEmail(email,password);
+    }
+    closeAuthModal();
+    showPage('home'); // Redirect to home after successful login
+  } catch(e) {
+    // Error already shown in registerWithEmail/loginWithEmail
   }
-  closeAuthModal();
 }
 
 // ── HERO IMAGE ROTATOR ──
