@@ -334,17 +334,19 @@ callback: async function(response){
          isp: isp
        };
        
-       // Save order to Firestore
-       try {
-         if (window.firebaseDb) {
-           await addDoc(collection(window.firebaseDb, 'orders'), {
-             ...receiptData,
-             createdAt: serverTimestamp()
-           });
-         }
-       } catch (e) {
-         console.error('Failed to save order: ', e);
-       }
+// Save order to Firestore
+        try {
+          if (window.firebaseDb && window.firebaseAuth?.currentUser) {
+            await addDoc(collection(window.firebaseDb, 'orders'), {
+              ...receiptData,
+              userId: window.firebaseAuth.currentUser.uid,
+              userEmail: window.firebaseAuth.currentUser.email,
+              createdAt: serverTimestamp()
+            });
+          }
+        } catch (e) {
+          console.error('Failed to save order: ', e);
+        }
        
        closeOrderModal();
        buildReceipt();
@@ -353,7 +355,7 @@ callback: async function(response){
          btn.disabled = false;
          btn.textContent = '✅ Confirm Order';
        }
-     },
+},
     onClose: function(){
       showToast('Payment cancelled');
       if(btn) {
