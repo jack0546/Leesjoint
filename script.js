@@ -87,6 +87,7 @@ const MENU = [
 let cart = [];
 let currentCategory = 'All';
 let receiptData = null;
+let authMode = 'login'; // login or register
 
 // ── PAGE NAVIGATION ──
 function showPage(id, linkEl, bnEl) {
@@ -317,29 +318,42 @@ function placeOrder(){
         }
       ]
     },
-    callback: function(response){
-      receiptData={
-        receiptNo: response.reference,
-        date: new Date().toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}),
-        name, phone,
-        email: email,
-        address: orderType==='pickup'?'Pickup':'Eastern Region, Koforidua - '+address,
-        orderType,
-        notes: document.getElementById('custNotes').value||'None',
-        items: [...cart],
-        total,
-        paystackRef: response.reference,
-        paymentMeans: paymentMeans,
-        isp: isp
-      };
-      closeOrderModal();
-      buildReceipt();
-      document.getElementById('receiptModal').classList.add('open');
-      if(btn) {
-        btn.disabled = false;
-        btn.textContent = '✅ Confirm Order';
-      }
-    },
+callback: async function(response){
+       receiptData={
+         receiptNo: response.reference,
+         date: new Date().toLocaleString('en-GH',{dateStyle:'medium',timeStyle:'short'}),
+         name, phone,
+         email: email,
+         address: orderType==='pickup'?'Pickup':'Eastern Region, Koforidua - '+address,
+         orderType,
+         notes: document.getElementById('custNotes').value||'None',
+         items: [...cart],
+         total,
+         paystackRef: response.reference,
+         paymentMeans: paymentMeans,
+         isp: isp
+       };
+       
+       // Save order to Firestore
+       try {
+         if (window.firebaseDb) {
+           await addDoc(collection(window.firebaseDb, 'orders'), {
+             ...receiptData,
+             createdAt: serverTimestamp()
+           });
+         }
+       } catch (e) {
+         console.error('Failed to save order: ', e);
+       }
+       
+       closeOrderModal();
+       buildReceipt();
+       document.getElementById('receiptModal').classList.add('open');
+       if(btn) {
+         btn.disabled = false;
+         btn.textContent = '✅ Confirm Order';
+       }
+     },
     onClose: function(){
       showToast('Payment cancelled');
       if(btn) {
@@ -515,11 +529,53 @@ function observeCards(container){
 renderFeatured();
 updateCartUI();
 
+// ── AUTH ──
+function openAuthModal(mode){
+  authMode = mode || 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Login' : 'Register';
+  document.getElementById('authModal').classList.add('open');
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPassword').value = '';
+}
+function closeAuthModal(){document.getElementById('authModal').classList.remove('open')}
+function toggleAuthMode(){
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
+  document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Login' : 'Register';
+  document.querySelector('#authModal a').textContent = authMode === 'login' ? 'Switch to Register' : 'Switch to Login';
+}
+async function submitAuth(){
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value.trim();
+  if(!email||!password){showToast('Please enter email and password');return;}
+  if(authMode==='register'){
+    if(window.registerWithEmail) await window.registerWithEmail(email,password);
+  }else{
+    if(window.loginWithEmail) await window.loginWithEmail(email,password);
+  }
+  closeAuthModal();
+}
+
 // ── HERO IMAGE ROTATOR ──
 // Collect unique images from the menu for the hero plate slideshow
 const HERO_IMAGES = [...new Set(MENU.map(m => m.img))];
 let heroImageIndex = 0;
 let heroRotationInterval = null;
+
+// Auth state listener
+if (window.firebaseAuth) {
+  onAuthStateChanged(window.firebaseAuth, (user) => {
+    const userPanel = document.getElementById('userPanel');
+    const userEmail = document.getElementById('userEmail');
+    if (user) {
+      userPanel.style.display = 'block';
+      userEmail.textContent = user.email || 'Logged in';
+    } else {
+      userPanel.style.display = 'none';
+    }
+  });
+}
 
 function rotateHeroImage() {
   const imgEl = document.getElementById('heroRotatingImg');
