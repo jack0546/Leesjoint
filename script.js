@@ -566,18 +566,20 @@ let heroImageIndex = 0;
 let heroRotationInterval = null;
 
 // Auth state listener
-if (window.firebaseAuth) {
-  onAuthStateChanged(window.firebaseAuth, (user) => {
-    const userPanel = document.getElementById('userPanel');
-    const userEmail = document.getElementById('userEmail');
-    if (user) {
-      userPanel.style.display = 'block';
-      userEmail.textContent = user.email || 'Logged in';
-    } else {
-      userPanel.style.display = 'none';
-    }
-  });
-}
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.firebaseAuth && window.onAuthStateChanged) {
+    window.onAuthStateChanged(window.firebaseAuth, (user) => {
+      const userPanel = document.getElementById('userPanel');
+      const userEmail = document.getElementById('userEmail');
+      if (user) {
+        userPanel.style.display = 'block';
+        userEmail.textContent = user.email || 'Logged in';
+      } else {
+        userPanel.style.display = 'none';
+      }
+    });
+  }
+});
 
 function rotateHeroImage() {
   const imgEl = document.getElementById('heroRotatingImg');
