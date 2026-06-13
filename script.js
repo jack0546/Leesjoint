@@ -719,16 +719,22 @@ async function loadUserOrders(){
   }
   
   const ordersList = document.getElementById('ordersList');
-  const ordersRef = collection(window.firebaseDb, 'orders');
+  const ordersRef = window.collection(window.firebaseDb, 'orders');
+  // Must explicitly filter by userId to pass Firestore Security Rules
+  const q = window.query(ordersRef, window.where('userId', '==', window.firebaseAuth.currentUser.uid));
   
   try {
-    const querySnapshot = await getDocs(ordersRef);
+    const querySnapshot = await window.getDocs(q);
     const userOrders = [];
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.userId === window.firebaseAuth.currentUser.uid || data.userEmail === window.firebaseAuth.currentUser.email) {
-        userOrders.push({id: doc.id, ...data});
-      }
+      userOrders.push({id: doc.id, ...doc.data()});
+    });
+    
+    // Sort locally to avoid composite index requirements
+    userOrders.sort((a, b) => {
+      const timeA = a.createdAt ? a.createdAt.toMillis() : 0;
+      const timeB = b.createdAt ? b.createdAt.toMillis() : 0;
+      return timeB - timeA;
     });
     
     if (userOrders.length === 0) {
@@ -737,7 +743,8 @@ async function loadUserOrders(){
       ordersList.innerHTML = userOrders.map(orderCard).join('');
     }
   } catch (error) {
-    ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Error loading orders.</div>';
+    console.error('Error loading orders:', error);
+    ordersList.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Error loading orders. (' + error.message + ')</div>';
   }
 }
 
