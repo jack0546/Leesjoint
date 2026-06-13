@@ -695,6 +695,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const userPanel = document.getElementById('userPanel');
       const userEmail = document.getElementById('userEmail');
       const userPhoto = document.getElementById('userPhoto');
+      const loginBtns = document.querySelectorAll('.auth-btn');
       if (user) {
         userPanel.style.display = 'block';
         userEmail.textContent = user.email || 'Logged in';
@@ -704,8 +705,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
           userPhoto.style.display = 'none';
         }
+        loginBtns.forEach(btn => btn.style.display = 'none');
       } else {
         userPanel.style.display = 'none';
+        loginBtns.forEach(btn => btn.style.display = 'inline-block');
       }
     });
   }
