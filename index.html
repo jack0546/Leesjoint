@@ -19,7 +19,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -37,6 +37,7 @@ window.firebaseApp = initializeApp(firebaseConfig);
      window.firebaseDb = getFirestore(window.firebaseApp);
      window.firebaseAnalytics = getAnalytics(window.firebaseApp);
      window.onAuthStateChanged = onAuthStateChanged;
+     window.sendPasswordResetEmail = sendPasswordResetEmail;
      window.collection = collection;
      window.addDoc = addDoc;
      window.serverTimestamp = serverTimestamp;
@@ -61,16 +62,46 @@ window.googleSignIn = async function() {
         await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
         showToast('Account created!');
       } catch (error) {
-        showToast('Registration failed: ' + error.message);
+        if (error.code === 'auth/email-already-in-use') {
+          showToast('This email is already registered. Please login instead.');
+        } else {
+          showToast('Registration failed: ' + error.message);
+        }
+        throw error;
       }
     };
     
     window.loginWithEmail = async function(email, password) {
+      const lockKey = 'lockout_' + email;
+      const attemptsKey = 'attempts_' + email;
+      const lockUntil = localStorage.getItem(lockKey);
+      
+      if (lockUntil && Date.now() < parseInt(lockUntil)) {
+        const waitMins = Math.ceil((parseInt(lockUntil) - Date.now()) / 60000);
+        showToast(`Account locked. Try again in ${waitMins} minute(s).`);
+        throw new Error('Account locked');
+      }
+
       try {
         await signInWithEmailAndPassword(window.firebaseAuth, email, password);
+        localStorage.removeItem(attemptsKey);
+        localStorage.removeItem(lockKey);
         showToast('Logged in!');
       } catch (error) {
-        showToast('Login failed: ' + error.message);
+        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+          let attempts = parseInt(localStorage.getItem(attemptsKey) || '0') + 1;
+          if (attempts >= 5) {
+            localStorage.setItem(lockKey, Date.now() + 15 * 60 * 1000);
+            localStorage.removeItem(attemptsKey);
+            showToast('Too many failed attempts. Account locked for 15 minutes.');
+          } else {
+            localStorage.setItem(attemptsKey, attempts);
+            showToast(`Invalid credentials. ${5 - attempts} attempts remaining.`);
+          }
+        } else {
+          showToast('Login failed: ' + error.message);
+        }
+        throw error;
       }
     };
     
@@ -146,14 +177,15 @@ window.googleSignIn = async function() {
       <button class="btn-cancel" onclick="closeAuthModal()">Cancel</button>
       <button class="btn-order" id="authSubmitBtn" onclick="submitAuth()">Login</button>
     </div>
+    <div style="text-align:center;margin-top:12px;display:flex;justify-content:space-between;font-size:.85rem;padding:0 10px;">
+      <a href="#" onclick="toggleAuthMode()" id="authSwitchLink" style="color:var(--gold);">Switch to Register</a>
+      <a href="#" onclick="handleForgotPassword()" id="forgotPasswordLink" style="color:var(--text);">Forgot Password?</a>
+    </div>
     <div style="text-align:center;margin-top:12px">
       <button class="btn-google" onclick="googleSignIn()" style="background:#4285f4;color:white;border:none;padding:10px 16px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#fff" d="M47.5 24.5c0-14.3-10.5-24.5-24.5-24.5S-1 10.2-1 24.5 9.6 48.9 23.5 48.9c4.8 0 8.8-1.3 12.3-3.6l-11.6-9.1c-2.6-1.9-5.4-3.1-8.2-3.1-4.3 0-7.9 2.7-9.4 6.5L24 24.5h23.5z"/></svg>
         Sign in with Google
       </button>
-    </div>
-    <div style="text-align:center;margin-top:12px">
-      <a href="#" onclick="toggleAuthMode()" style="color:var(--gold);font-size:.85rem">Switch to Register</a>
     </div>
   </div>
 </div>

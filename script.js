@@ -586,6 +586,10 @@ function openAuthModal(mode){
   authMode = mode || 'login';
   document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
   document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Login' : 'Register';
+  const switchLink = document.getElementById('authSwitchLink');
+  if(switchLink) switchLink.textContent = authMode === 'login' ? 'Switch to Register' : 'Switch to Login';
+  const forgotLink = document.getElementById('forgotPasswordLink');
+  if(forgotLink) forgotLink.style.display = authMode === 'login' ? 'inline' : 'none';
   document.getElementById('authModal').classList.add('open');
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
@@ -595,12 +599,22 @@ function toggleAuthMode(){
   authMode = authMode === 'login' ? 'register' : 'login';
   document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
   document.getElementById('authSubmitBtn').textContent = authMode === 'login' ? 'Login' : 'Register';
-  document.querySelector('#authModal a').textContent = authMode === 'login' ? 'Switch to Register' : 'Switch to Login';
+  const switchLink = document.getElementById('authSwitchLink');
+  if(switchLink) switchLink.textContent = authMode === 'login' ? 'Switch to Register' : 'Switch to Login';
+  const forgotLink = document.getElementById('forgotPasswordLink');
+  if(forgotLink) forgotLink.style.display = authMode === 'login' ? 'inline' : 'none';
 }
+
+let isAuthenticating = false;
 async function submitAuth(){
+   if(isAuthenticating) return;
    const email = document.getElementById('authEmail').value.trim();
    const password = document.getElementById('authPassword').value.trim();
    if(!email||!password){showToast('Please enter email and password');return;}
+   isAuthenticating = true;
+   const btn = document.getElementById('authSubmitBtn');
+   btn.textContent = 'Please wait...';
+   btn.disabled = true;
    try {
      if(authMode==='register'){
        if(window.registerWithEmail) await window.registerWithEmail(email,password);
@@ -611,8 +625,57 @@ async function submitAuth(){
      showPage('home'); // Redirect to home after successful login
    } catch(e) {
      // Error already shown in registerWithEmail/loginWithEmail
+   } finally {
+     isAuthenticating = false;
+     btn.textContent = authMode === 'login' ? 'Login' : 'Register';
+     btn.disabled = false;
    }
  }
+
+async function handleForgotPassword() {
+  const email = document.getElementById('authEmail').value.trim();
+  if(!email) {
+    showToast('Please enter your email first to reset password');
+    return;
+  }
+  
+  const lastReset = localStorage.getItem('lastReset_' + email);
+  if (lastReset && Date.now() - parseInt(lastReset) < 120000) {
+    const waitSecs = Math.ceil((120000 - (Date.now() - parseInt(lastReset))) / 1000);
+    showToast(`Please wait ${waitSecs} seconds before requesting another reset.`);
+    return;
+  }
+  
+  try {
+    if (window.sendPasswordResetEmail && window.firebaseAuth) {
+      await window.sendPasswordResetEmail(window.firebaseAuth, email);
+      localStorage.setItem('lastReset_' + email, Date.now());
+      showToast('Password reset email sent!');
+    } else {
+      showToast('Password reset not available.');
+    }
+  } catch(e) {
+    showToast('Reset failed: ' + e.message);
+  }
+}
+
+// ── SESSION TIMEOUT ──
+let sessionTimeoutTimer;
+const SESSION_EXPIRY_MS = 15 * 60 * 1000; // 15 minutes
+function resetSessionTimer() {
+  if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+    clearTimeout(sessionTimeoutTimer);
+    sessionTimeoutTimer = setTimeout(() => {
+      if (window.logout) {
+        window.logout();
+        showToast('Session expired due to inactivity.');
+      }
+    }, SESSION_EXPIRY_MS);
+  }
+}
+['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+  document.addEventListener(evt, resetSessionTimer);
+});
 
  // Handle Google sign-in redirect
  window.addEventListener('authSuccess', function(){
