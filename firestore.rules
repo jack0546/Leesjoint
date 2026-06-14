@@ -1,16 +1,35 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Orders - immutable after creation, user can only see their own
     match /orders/{order} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.token.email == resource.data.userEmail);
+      allow read: if request.auth != null 
+        && (request.auth.uid == resource.data.userId 
+          || request.auth.token.email == resource.data.userEmail);
+      
       allow create: if request.auth != null 
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.keys().hasAll(['name', 'phone', 'total', 'items', 'userId', 'userEmail'])
+        && request.resource.data.userEmail == request.auth.token.email
+        && request.resource.data.keys().hasAll(['name', 'phone', 'total', 'items'])
         && request.resource.data.items is list
         && request.resource.data.total is number
         && request.resource.data.name is string
-        && request.resource.data.phone is string;
-      allow update, delete: if false; // Never allow edits after order is placed
+        && request.resource.data.phone is string
+        && request.resource.data.total > 0;
+      
+      allow update, delete: if false;
+    }
+    
+    // Users - only allow users to read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

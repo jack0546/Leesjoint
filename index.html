@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lee`s Joint – Unique Taste | Food Delivery Koforidua</title>
-  <meta name="description" content="Order fresh, authentic Ghanaian food from Chez Lee. Banku, Jollof, Fries, and more. Delivery & pickup in Koforidua, Eastern Region."/>
+  <title>Lee's Joint – Unique Taste | Food Delivery Koforidua</title>
+  <meta name="description" content="Order fresh, authentic Ghanaian food from Lee's Joint. Banku, Jollof, Fries, and more. Delivery & pickup in Koforidua, Eastern Region."/>
   <meta name="google-site-verification" content="eLFxGMZfVe0RUyqAMj3gt4bAoggE50KruIuUZ9VNodI"/>
   
   <!-- Fonts -->
@@ -32,22 +32,22 @@
       measurementId: "G-L9ZM18F6S1"
     };
 
-window.firebaseApp = initializeApp(firebaseConfig);
-     window.firebaseAuth = getAuth(window.firebaseApp);
-     setPersistence(window.firebaseAuth, browserLocalPersistence).catch(console.error);
-     window.firebaseDb = getFirestore(window.firebaseApp);
-     window.firebaseAnalytics = getAnalytics(window.firebaseApp);
-     window.onAuthStateChanged = onAuthStateChanged;
-     window.sendPasswordResetEmail = sendPasswordResetEmail;
-     window.collection = collection;
-     window.addDoc = addDoc;
-     window.serverTimestamp = serverTimestamp;
-     window.getDocs = getDocs;
-     window.query = query;
-     window.orderBy = orderBy;
-     window.where = where;
+    window.firebaseApp = initializeApp(firebaseConfig);
+    window.firebaseAuth = getAuth(window.firebaseApp);
+    setPersistence(window.firebaseAuth, browserLocalPersistence).catch(console.error);
+    window.firebaseDb = getFirestore(window.firebaseApp);
+    window.firebaseAnalytics = getAnalytics(window.firebaseApp);
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.sendPasswordResetEmail = sendPasswordResetEmail;
+    window.collection = collection;
+    window.addDoc = addDoc;
+    window.serverTimestamp = serverTimestamp;
+    window.getDocs = getDocs;
+    window.query = query;
+    window.orderBy = orderBy;
+    window.where = where;
     
-window.googleSignIn = async function() {
+    window.googleSignIn = async function() {
        const provider = new GoogleAuthProvider();
        try {
          await signInWithPopup(window.firebaseAuth, provider);
@@ -63,14 +63,14 @@ window.googleSignIn = async function() {
       try {
         await createUserWithEmailAndPassword(window.firebaseAuth, email, password);
         showToast('Account created!');
-      } catch (error) {
+      } catch (error) { 
         if (error.code === 'auth/email-already-in-use') {
           showToast('This email is already registered. Please login instead.');
         } else {
           showToast('Registration failed: ' + error.message);
         }
         throw error;
-      }
+      }  
     };
     
     window.loginWithEmail = async function(email, password) {
@@ -120,7 +120,7 @@ window.googleSignIn = async function() {
 
 <!-- ── NAV ── -->
 <nav>
-  <div class="nav-logo">Lee`s Joint<span>Unique Taste</span></div>
+  <div class="nav-logo">Lee's Joint<span>Unique Taste</span></div>
   <div class="nav-links">
     <a href="#" class="active" onclick="showPage('home',this)">Home</a>
     <a href="#" onclick="showPage('menu',this)">Menu</a>
@@ -312,7 +312,7 @@ window.googleSignIn = async function() {
       </div>
       <div class="hero-visual fade-up-2">
         <div class="hero-plate">
-          <img id="heroRotatingImg" class="hero-rotating-img" src="images/banku-and-Tilapia.jpg" alt="Delicious food from Chez Lee" />
+          <img id="heroRotatingImg" class="hero-rotating-img" src="images/banku-and-Tilapia.jpg" alt="Delicious food from Lee's Joint" />
           <div class="hero-badge b1"><span class="dot"></span><span>Delivery <span class="gold">Open</span></span></div>
           <div class="hero-badge b2"><span>🔥 Fresh Daily</span></div>
         </div>
@@ -403,7 +403,7 @@ window.googleSignIn = async function() {
   <div class="section">
     <div class="about-hero">
       <h1>Our Story</h1>
-      <p>Chez Lee was born from a love of authentic Ghanaian flavours and a desire to share them with the community. Every dish is crafted with fresh ingredients and genuine passion.</p>
+      <p>Lee's Joint was born from a love of authentic Ghanaian flavours and a desire to share them with the community. Every dish is crafted with fresh ingredients and genuine passion.</p>
     </div>
     <div class="about-grid">
       <div class="about-card">
@@ -478,7 +478,7 @@ window.googleSignIn = async function() {
           <div class="ci-text"><span class="ci-label">Services</span><span class="ci-val">Delivery · Takeaway · Dine-In</span></div>
         </div>
         <div class="cta-btns">
-          <a href="https://wa.me/233244107536" target="_blank" class="cta-btn wa">💬 Chat on WhatsApp</a>
+          <a href="https://wa.me/233244107536" target="_blank" rel="noopener noreferrer" class="cta-btn wa">💬 Chat on WhatsApp</a>
           <a href="tel:+233244107536" class="cta-btn phone">📞 Call Us Now</a>
         </div>
       </div>
@@ -495,7 +495,7 @@ window.googleSignIn = async function() {
     </div>
     <div class="map-placeholder" onclick="openMap()" style="height:280px">
       <div class="map-icon">🗺</div>
-      <div><strong>Chez Lee Restaurant, Koforidua Ghana</strong></div>
+      <div><strong>Lee's Joint, Koforidua Ghana</strong></div>
       <div style="font-size:.75rem;margin-top:4px">Click to open in Google Maps</div>
     </div>
 </div>
@@ -524,7 +524,7 @@ window.googleSignIn = async function() {
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <div class="footer-logo">Chez Lee</div>
+      <div class="footer-logo">Lee's Joint</div>
       <p class="footer-desc">Authentic Ghanaian food with a unique twist. Fresh ingredients, generous portions, fast delivery in Koforidua.</p>
     </div>
     <div class="footer-col">
@@ -544,11 +544,11 @@ window.googleSignIn = async function() {
       <a href="#" onclick="showPage('contact')">Contact</a>
       <a href="privacy.html">Privacy Policy</a>
       <a href="tel:+233598716291">📞 +233 598 716 291</a>
-      <a href="https://wa.me/233598716291" target="_blank">💬 WhatsApp</a>
+      <a href="https://wa.me/233598716291" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
     </div>
   </div>
   <div class="footer-bottom"> 
-    <span>© 2025 Lee`s Joint · Unique Taste · Koforidua, Ghana</span>
+    <span>© 2026 Lee's Joint · Unique Taste · Koforidua, Ghana</span>
     <span>Made with ❤️ for great food</span>
   </div>
 </footer>
