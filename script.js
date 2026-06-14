@@ -9,24 +9,8 @@ const MENU = [
     name:'Fries & Chicken Wings (Large)',     desc:'Crispy golden fries with seasoned chicken wings',         price:70, featured:true},
 
   // ── BANKU ──
-  {id:4,  cat:'Banku',      emoji:'🐟', img:'images/banku-and-Tilapia.jpg',
-    name:'Banku & Tilapia (Small)',           desc:'Smooth fermented banku with perfectly grilled tilapia',   price:40# Navigate to your project folder
-cd /d "d:\now ok"
-
-# Initialize and stage changes
-git init
-git add .
-
-# Commit with a clean message
-git commit -m "Optimize: Clean Firebase initialization and secure external links"
-
-# Link to your provided URL
-git remote add origin <https://github.com/jack0546/Leesjoint.git> || git remote set-url origin <https://github.com/jack0546/Leesjoint.git>
-
-# Set branch to main and push
-git branch -M main
-git push -u origin main
-, featured:true},
+{id:4,  cat:'Banku',      emoji:'🐟', img:'images/banku-and-Tilapia.jpg',
+    name:'Banku & Tilapia (Small)',           desc:'Smooth fermented banku with perfectly grilled tilapia',   price:40, featured:true},
   {id:5,  cat:'Banku',      emoji:'🐟', img:'images/banku-and-Tilapia.jpg',
     name:'Banku & Tilapia (Medium)',          desc:'Smooth fermented banku with perfectly grilled tilapia',   price:50},
   {id:6,  cat:'Banku',      emoji:'🐟', img:'images/banku-and-Tilapia.jpg',
