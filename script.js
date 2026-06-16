@@ -149,8 +149,8 @@ let _cardIndex = 0;
 function foodCard(item){
   const delay = (_cardIndex++ % 12) * 60;
   return `
-  <div class="food-card" data-id="${item.id}" onclick="addToCart(${item.id})" style="transition-delay:${delay}ms">
-    <div class="food-img">
+  <div class="food-card" data-id="${item.id}" style="transition-delay:${delay}ms">
+    <div class="food-img" onclick="openSizePicker(${item.id})">
       <img src="${item.img}" alt="${item.name}" class="food-item-img" loading="lazy" />
       <span class="food-emoji" style="display:none">${item.emoji}</span>
       <div class="img-shimmer" style="animation-delay:${delay}ms"></div>
@@ -166,6 +166,40 @@ function foodCard(item){
       </div>
     </div>
   </div>`;
+}
+
+let selectedSizeItemId = null;
+
+function openSizePicker(id){
+  selectedSizeItemId = id;
+  const item = MENU.find(m=>m.id===id);
+  if(!item) return;
+  const base = item.name.replace(/\s*\((Small|Medium|Large)\)$/, '').trim();
+  const variants = MENU.filter(m => m.name.replace(/\s*\((Small|Medium|Large)\)$/, '').trim() === base);
+  if(variants.length <= 1){
+    addToCart(item.id);
+    return;
+  }
+  const opts = document.getElementById('sizeOptions');
+  document.getElementById('sizeModalTitle').textContent = (item.emoji||'') + ' ' + base;
+  opts.innerHTML = variants.map(v => {
+    const sizeLabel = v.name.includes('(Small)') ? 'Small' : v.name.includes('(Medium)') ? 'Medium' : v.name.includes('(Large)') ? 'Large' : 'Standard';
+    return `<div class="size-option" data-id="${v.id}">
+      <div class="size-label">${sizeLabel}</div>
+      <div class="size-price">GH₵ ${v.price.toFixed(2)}</div>
+    </div>`;
+  }).join('');
+  opts.querySelectorAll('.size-option').forEach(el => {
+    el.onclick = () => {
+      addToCart(parseInt(el.getAttribute('data-id'),10));
+      closeSizePicker();
+    };
+  });
+  document.getElementById('sizeModal').classList.add('open');
+}
+function closeSizePicker(){
+  const m = document.getElementById('sizeModal');
+  if(m) m.classList.remove('open');
 }
 
 // ── CART ──
@@ -772,23 +806,19 @@ function rotateHeroImage() {
   const imgEl = document.getElementById('heroRotatingImg');
   if (!imgEl) return;
 
-  // Fade out current image
   imgEl.classList.add('fade-out');
   imgEl.classList.remove('fade-in');
 
   setTimeout(() => {
-    // Move to next image
     heroImageIndex = (heroImageIndex + 1) % HERO_IMAGES.length;
     imgEl.src = HERO_IMAGES[heroImageIndex];
     imgEl.alt = MENU.find(m => m.img === HERO_IMAGES[heroImageIndex])?.name || 'Chez Lee food';
 
-    // Fade in new image
     imgEl.classList.remove('fade-out');
     imgEl.classList.add('fade-in');
-  }, 600); // wait for fade-out to complete
+  }, 600);
 }
 
-// Start rotation every 5 seconds
 function startHeroRotation() {
   if (heroRotationInterval) clearInterval(heroRotationInterval);
   heroRotationInterval = setInterval(rotateHeroImage, 5000);

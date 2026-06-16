@@ -128,7 +128,7 @@
     <a href="#" onclick="showPage('contact',this)">Contact</a>
   </div>
   <div class="nav-right">
-    <button class="auth-btn" onclick="openAuthModal('login')" style="background:none;border:1px solid var(--border);padding:8px 12px;border-radius:6px;color:var(--text);cursor:pointer;margin-right:8px">Login</button>
+    <button class="auth-btn" onclick="openAuthModal('login')">Login</button>
     <button class="cart-btn" onclick="toggleCart()">
       🛒 Cart <span class="cart-count" id="cartCount">0</span>
     </button>
@@ -201,6 +201,17 @@
      <button onclick="showPage('orders')" style="background:var(--gold);color:white;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:.85rem">📋 Orders</button>
      <button onclick="logout()" style="background:var(--border);color:var(--text);border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-size:.85rem">Logout</button>
    </div>
+</div>
+
+<!-- ── SIZE PICKER MODAL ── -->
+<div class="modal-overlay" id="sizeModal">
+  <div class="modal">
+    <h3 id="sizeModalTitle">Choose Size</h3>
+    <div class="size-options" id="sizeOptions"></div>
+    <div class="modal-actions" style="margin-top:18px">
+      <button class="btn-cancel" onclick="closeSizePicker()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <!-- ── ORDER MODAL ── -->
@@ -293,7 +304,6 @@
 <div class="page active" id="page-home">
   <!-- HERO -->
   <div class="hero">
-    <div class="hero-bg"></div>
     <div class="hero-grid"></div>
     <div class="hero-content">
       <div class="fade-up">
@@ -375,6 +385,7 @@
      PAGE: MENU
 ══════════════════════════════════════ -->
 <div class="page" id="page-menu">
+  <div class="page-wallpaper"></div>
   <div class="section">
     <div class="section-header">
       <div class="eyebrow">What We Serve</div>
@@ -492,7 +503,7 @@
           <button class="btn-primary" style="width:100%;padding:13px;border-radius:50px;font-size:.9rem" onclick="sendContactForm()">Send Message →</button>
         </div>
       </div>
-    </div>
+    </div>     
     <div class="map-placeholder" onclick="openMap()" style="height:280px">
       <div class="map-icon">🗺</div>
       <div><strong>Lee's Joint, Koforidua Ghana</strong></div>
@@ -505,6 +516,7 @@
      PAGE: ORDERS (Order History)
 ══════════════════════════════════════ -->
 <div class="page" id="page-orders">
+  <div class="page-wallpaper"></div>
   <div class="section">
     <div class="section-header">
       <div class="eyebrow">Your Account</div>
