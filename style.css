@@ -115,7 +115,7 @@ nav{
   position:relative;min-height:92vh;
   display:flex;align-items:center;
   overflow:hidden;
-  background:url('../images/WALL 3.jpg') center/cover no-repeat fixed;
+  background:url('images/WALL 3.jpg') center/cover no-repeat fixed;
 }
 .hero::after{
   content:'';position:absolute;inset:0;z-index:1;
@@ -267,9 +267,9 @@ nav{
     linear-gradient(0deg,rgba(13,13,13,0.55) 0%,transparent 40%);
   pointer-events:none;
 }
-#page-home .page-wallpaper{background-image:url('../images/WALL 3.jpg')}
-#page-menu .page-wallpaper{background-image:url('../images/WALL 1.webp')}
-#page-orders .page-wallpaper{background-image:url('../images/WALL 2.webp')}
+#page-home .page-wallpaper{background-image:url('images/WALL 3.jpg')}
+#page-menu .page-wallpaper{background-image:url('images/WALL 1.webp')}
+#page-orders .page-wallpaper{background-image:url('images/WALL 2.webp')}
 
 /* ── SECTIONS ── */
 .page .section{position:relative;z-index:2}
