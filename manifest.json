@@ -11,14 +11,14 @@
   "theme_color": "#D4A843",
   "icons": [
     {
-      "src": "images/banku-and-Tilapia.jpg",
+      "src": "images/logo.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "images/WALL 3.jpg",
+      "src": "images/logo.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }
