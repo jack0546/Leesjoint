@@ -572,7 +572,7 @@ function sendContactForm(){
 
 // ── MAP ──
 function openMap(){
-  window.open('https://www.google.com/maps/search/Chez+The+Restaurant+Accra+Ghana','_blank');
+  window.open('https://www.google.com/maps/search/?api=1&query=6.064790,-0.266371','_blank');
 }
 
 // ── TOAST ──
